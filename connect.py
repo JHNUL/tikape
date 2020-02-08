@@ -28,10 +28,6 @@ def start(c):
             except Exception as i:
                 print('from user loop {}'.format(i))
 
-# c.execute("SELECT koodi, nimi FROM Paketti, Asiakas as A WHERE asiakas_id = A.id;")
-# print(c.fetchall())
-
-
 if __name__ == "__main__":
     try:
         c = connect_db()
