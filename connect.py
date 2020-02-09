@@ -1,36 +1,47 @@
-import sqlite3
+from sqlite3 import connect, PARSE_DECLTYPES
+from re import match
 import queries
-import constants
-import utils
+import texts
+import query_actions
 
 
 def connect_db() -> 'cursor':
     """Connect to db and return curson on success"""
-    db = sqlite3.connect("test.db")
+    db = connect("test.db", detect_types=PARSE_DECLTYPES)
     db.isolation_level = None
     return db.cursor()
 
 
-def start(c):
+def cast_input(input_str: str) -> int:
+    """Check that input value is allowed, otherwise complain with raised exception."""
+    input_str = str.strip(input_str)
+    if match('^[1-9]{1}$', input_str) is None:
+        raise Exception(texts.NUMBER_EXCEPTION)
+    else:
+        return int(input_str)
+
+
+def main(c):
     """Start loop where user can select actions"""
-    print(constants.LIST_ACTIONS)
+    print(texts.LIST_ACTIONS)
     while True:
-        print(constants.SELECT_ACTION)
+        print(texts.SELECT_ACTION)
         user_input = input()
         # exit loop with empty string
         if not user_input:
             c.close()
             break
         else:
-            try:
-                action_num = utils.cast_input(user_input)
-                utils.execute_action(action_num, c)
-            except Exception as i:
-                print('from user loop {}'.format(i))
+            action_num = cast_input(user_input)
+            query_actions.execute_action(action_num, c)
+
 
 if __name__ == "__main__":
     try:
         c = connect_db()
-        start(c)
+        main(c)
     except Exception as inst:
-        print('from main: {}'.format(inst))
+        print('Error: {}'.format(inst))
+    finally:
+        if (c):
+            c.close()
