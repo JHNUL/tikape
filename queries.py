@@ -1,42 +1,54 @@
 INIT_DB =                   """ PRAGMA foreign_keys = OFF;
-                                DROP TABLE IF EXISTS Asiakas;
-                                DROP TABLE IF EXISTS Paikka;
-                                DROP TABLE IF EXISTS Paketti;
-                                DROP TABLE IF EXISTS Tapahtuma;
+                                DROP TABLE IF EXISTS Asiakkaat;
+                                DROP TABLE IF EXISTS Paikat;
+                                DROP TABLE IF EXISTS Paketit;
+                                DROP TABLE IF EXISTS Tapahtumat;
                                 PRAGMA foreign_keys = ON;
-                                CREATE TABLE Asiakas (
-                                  nimi TEXT PRIMARY KEY
-                                );
-                                CREATE TABLE Paikka (
-                                  nimi TEXT PRIMARY KEY
-                                );
-                                CREATE TABLE Paketti (
-                                  koodi VARCHAR(200) PRIMARY KEY,
-                                  asiakas_nimi TEXT,
-                                  FOREIGN KEY(asiakas_nimi) REFERENCES Asiakas(nimi)
-                                );
-                                CREATE TABLE Tapahtuma (
+                                CREATE TABLE Asiakkaat (
                                   id INTEGER PRIMARY KEY,
-                                  paketti_koodi VARCHAR(200),
+                                  nimi TEXT NOT NULL UNIQUE
+                                );
+                                CREATE TABLE Paikat (
+                                  id INTEGER PRIMARY KEY,
+                                  nimi TEXT NOT NULL UNIQUE
+                                );
+                                CREATE TABLE Paketit (
+                                  id INTEGER PRIMARY KEY,
+                                  koodi VARCHAR(200) NOT NULL UNIQUE,
+                                  asiakas_id INTEGER REFERENCES Asiakkaat(id)
+                                );
+                                CREATE TABLE Tapahtumat (
+                                  paketti_id INTEGER REFERENCES Paketit(id),
+                                  paikka_id INTEGER REFERENCES Paikat(id),
                                   ajankohta TEXT NOT NULL,
-                                  paikka_nimi TEXT,
-                                  kuvaus TEXT,
-                                  FOREIGN KEY(paketti_koodi) REFERENCES Paketti(koodi),
-                                  FOREIGN KEY(paikka_nimi) REFERENCES Paikka(nimi)
+                                  kuvaus TEXT
                                 ); """
-
-ADD_LOCATION =              """INSERT INTO Paikka(nimi) VALUES (?);"""
-ADD_CUSTOMER =              """INSERT INTO Asiakas(nimi) VALUES (?);"""
-ADD_PARCEL =                """INSERT INTO Paketti(koodi, asiakas_nimi) VALUES (?,?);"""
-ADD_EVENT =                 """INSERT INTO Tapahtuma(paketti_koodi, paikka_nimi, kuvaus, ajankohta)
-                               VALUES (?,?,?,datetime('now', 'localtime'));"""
-GET_EVENTS_FOR_PARCEL =     """SELECT ajankohta, paikka_nimi, kuvaus FROM Tapahtuma WHERE paketti_koodi=?;"""
-GET_PARCELS_FOR_CUSTOMER =  """SELECT koodi, (SELECT count(*) FROM Tapahtuma WHERE paketti_koodi = P.koodi)
-                               FROM Paketti P
-                               WHERE asiakas_nimi = ?;"""
-GET_EVENTS_PER_DATE =       """SELECT count(*) FROM Tapahtuma
-                               WHERE paikka_nimi = ?
-                               AND date(?) = date(ajankohta);"""
 
 BEGIN_TRANSACTION =         """BEGIN TRANSACTION;"""
 COMMIT =                    """COMMIT;"""
+
+GET_CUSTOMER_ID =           """SELECT id FROM Asiakkaat WHERE nimi = ?;"""
+GET_PARCEL_ID =             """SELECT id FROM Paketit WHERE koodi = ?;"""
+GET_LOCATION_ID =           """SELECT id FROM Paikat WHERE nimi = ?;"""
+
+ADD_LOCATION =              """INSERT INTO Paikat(nimi) VALUES (?);"""
+ADD_CUSTOMER =              """INSERT INTO Asiakkaat(nimi) VALUES (?);"""
+ADD_PARCEL =                """INSERT INTO Paketit(koodi, asiakas_id) VALUES (?,?);"""
+ADD_EVENT =                 """INSERT INTO Tapahtumat(paketti_id, paikka_id, kuvaus, ajankohta)
+                               VALUES (?,?,?,datetime('now', 'localtime'));"""
+
+GET_EVENTS_FOR_PARCEL =     """SELECT T.ajankohta, L.nimi, T.kuvaus FROM Tapahtumat T
+                               LEFT JOIN Paketit as P ON P.id = T.paketti_id
+                               LEFT JOIN Paikat as L ON T.paikka_id = L.id
+                               WHERE P.koodi = ?;"""
+
+GET_PARCELS_FOR_CUSTOMER =  """SELECT P.koodi, count(T.paketti_id) FROM Tapahtumat T
+                               LEFT JOIN Paketit as P ON P.id = T.paketti_id
+                               LEFT JOIN Asiakkaat as A ON P.asiakas_id = A.id
+                               WHERE A.nimi = ?
+                               GROUP BY P.koodi;"""
+
+GET_EVENTS_PER_DATE =       """SELECT count(paikka_id) FROM Tapahtumat T
+                               LEFT JOIN Paikat P ON T.paikka_id = P.id
+                               WHERE P.nimi = ?
+                               AND date(?) = date(ajankohta);"""

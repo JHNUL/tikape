@@ -16,7 +16,7 @@ def cast_input(input_str: str) -> int:
     """Check that input value is allowed, otherwise complain with raised exception."""
     input_str = str.strip(input_str)
     if match('^[1-9]{1}$', input_str) is None:
-        raise Exception(texts.NUMBER_EXCEPTION)
+        raise UserWarning(texts.NUMBER_EXCEPTION)
     else:
         return int(input_str)
 
@@ -32,8 +32,12 @@ def main(c):
             c.close()
             break
         else:
-            action_num = cast_input(user_input)
-            query_actions.execute_action(action_num, c)
+            # let loop continue with custom warnings, actual runtime errors will cause exit
+            try:
+                action_num = cast_input(user_input)
+                query_actions.execute_action(action_num, c)
+            except UserWarning as warning:
+                print(warning)
 
 
 if __name__ == "__main__":
