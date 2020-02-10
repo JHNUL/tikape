@@ -16,7 +16,7 @@ def cast_input(input_str: str) -> int:
     """Check that input value is allowed, otherwise complain with raised exception."""
     input_str = str.strip(input_str)
     if match('^[1-9]{1}$', input_str) is None:
-        raise UserWarning(texts.NUMBER_EXCEPTION)
+        raise Exception(texts.NUMBER_EXCEPTION)
     else:
         return int(input_str)
 

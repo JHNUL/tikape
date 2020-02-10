@@ -21,5 +21,3 @@ lorem ipsum
 ## Rajoitteet
 
 Asiakkaiden ja paikkojen nimillä sekä pakettien koodeilla on tietokantatasolla rajoite UNIQUE, jolloin samannimiset lisäykset aiheuttavat poikkeuksen. Useiden samanaikaisten käyttäjien tapauksessa ei tulisi olla ongelmaa sillä kirjoituskomennot ovat yksittäisiä käskyjä, jolloin ne muodostavat itsessään transaktion. SQLiten oletustransaktiotaso on 4, eli ainoastaan yksi säie voi lukea tai kirjoittaa tietokantaan yhdellä hetkellä. Täsmälleen samanaikaiset kirjoituskäskyt suoritetaan joka tapauksessa jossain peräkkäisessä järjestyksessä, jolloin esim. samaa paikannimeä kirjoittavista käskyistä jälkimmäinen saa `unique constraint violation` poikkeuksen.
-
-## Koodi
