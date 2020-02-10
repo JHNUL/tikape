@@ -29,7 +29,7 @@ def add_parcel_for_customer(cursor, params: list):
     cursor.execute(queries.GET_CUSTOMER_ID, [params[1]])
     customer_id = cursor.fetchone()
     if not customer_id:
-        raise UserWarning(texts.ERROR_CUSTOMER_NOT_FOUND.format(params[1]))
+        raise Exception(texts.ERROR_CUSTOMER_NOT_FOUND.format(params[1]))
     cursor.execute(queries.ADD_PARCEL, [params[0], customer_id[0]])
 
 
@@ -42,11 +42,11 @@ def add_event(cursor, params: list):
     cursor.execute(queries.GET_PARCEL_ID, [params[0]])
     parcel_id = cursor.fetchone()
     if not parcel_id:
-        raise UserWarning(texts.ERROR_PARCEL_NOT_FOUND.format(params[0]))
+        raise Exception(texts.ERROR_PARCEL_NOT_FOUND.format(params[0]))
     cursor.execute(queries.GET_LOCATION_ID, [params[1]])
     location_id = cursor.fetchone()
     if not location_id:
-        raise UserWarning(texts.ERROR_LOCATION_NOT_FOUND.format(params[1]))
+        raise Exception(texts.ERROR_LOCATION_NOT_FOUND.format(params[1]))
     cursor.execute(queries.ADD_EVENT, [parcel_id[0], location_id[0], params[2]])
 
 
@@ -100,29 +100,29 @@ def performance_test(cursor):
     # step 3: add 1000 parcels
     start = perf_counter()
     for x in range(1000):
-        add_parcel_for_customer(cursor, ['ITEM{}'.format(x+1), 'CUST1'])
+        add_parcel_for_customer(cursor, ['ITEM{}'.format(x+1), 'CUST{}'.format(x+1)])
     stop = perf_counter()
     print('Vaihe 3: {} s'.format(stop-start))
 
     # step 4: add 1000000 events
     start = perf_counter()
     for x in range(1000000):
-        add_event(cursor, ['ITEM1', 'LOC{}'.format((x % 1000)+1), 'foo'])
+        add_event(cursor, ['ITEM{}'.format((x % 1000)+1), 'LOC{}'.format((x % 1000)+1), 'foo'])
     stop = perf_counter()
     print('Vaihe 4: {} s'.format(stop-start))
     cursor.execute(queries.COMMIT)
 
     # step 5: do 1000 queries for a customer's parcels
-    start = perf_counter()
+    # start = perf_counter()
     # for x in range(1000):
-    #     get_parcels_for_customer(cursor, ['CUST1'], False)
+    #     get_parcels_for_customer(cursor, ['CUST{}'.format(x+1)], False)
     # stop = perf_counter()
     # print('Vaihe 5: {} s'.format(stop-start))
 
     # step 6: do 1000 queries for a parcel's events
     start = perf_counter()
     for x in range(1000):
-        get_events_for_parcel(cursor, ['ITEM{}'.format(x+1)], False)
+        get_events_for_parcel(cursor, ['ITEM1'.format(x+1)], False)
     stop = perf_counter()
     print('Vaihe 6: {} s'.format(stop-start))
 
@@ -145,7 +145,7 @@ def execute_action(action_num: int, cursor):
         params = []
         for prompt in action[1:]:
             print(prompt)
-            user_input = input()
+            user_input = input() or None
             params.append(user_input)
         action[0](cursor, params)
     else:

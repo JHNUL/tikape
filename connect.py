@@ -32,11 +32,10 @@ def main(c):
             c.close()
             break
         else:
-            # let loop continue with custom warnings, actual runtime errors will cause exit
             try:
                 action_num = cast_input(user_input)
                 query_actions.execute_action(action_num, c)
-            except UserWarning as warning:
+            except (Exception) as warning:
                 print(warning)
 
 
@@ -44,8 +43,8 @@ if __name__ == "__main__":
     try:
         c = connect_db()
         main(c)
-    except Exception as inst:
-        print('Error: {}'.format(inst))
+    except Exception as show_stopper:
+        print('Error: {}'.format(show_stopper))
     finally:
         if (c):
             c.close()
