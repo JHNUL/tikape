@@ -4,24 +4,28 @@ from time import perf_counter
 
 
 def add_tables(cursor):
-    cursor.executescript(queries.INIT_DB)
+    cursor.executescript(queries.INIT_DB_WITH_INDICES)
+    print(texts.DATABASE_CREATED)
 
 
-def add_location(cursor, params: list):
+def add_location(cursor, params: list, output: bool = True):
     """params
         - [0] location name
     """
     cursor.execute(queries.ADD_LOCATION, params)
+    if output:
+        print(texts.LOCATION_ADDED)
 
-
-def add_customer(cursor, params: list):
+def add_customer(cursor, params: list, output: bool = True):
     """params
         - [0] customer name
     """
     cursor.execute(queries.ADD_CUSTOMER, params)
+    if output:
+        print(texts.CUSTOMER_ADDED)
 
 
-def add_parcel_for_customer(cursor, params: list):
+def add_parcel_for_customer(cursor, params: list, output: bool = True):
     """params
         - [0] parcel code
         - [1] customer name
@@ -31,9 +35,10 @@ def add_parcel_for_customer(cursor, params: list):
     if not customer_id:
         raise Exception(texts.ERROR_CUSTOMER_NOT_FOUND.format(params[1]))
     cursor.execute(queries.ADD_PARCEL, [params[0], customer_id[0]])
+    if output:
+        print(texts.PARCEL_ADDED)
 
-
-def add_event(cursor, params: list):
+def add_event(cursor, params: list, output: bool = True):
     """params
         - [0] parcel code
         - [1] location name
@@ -48,6 +53,8 @@ def add_event(cursor, params: list):
     if not location_id:
         raise Exception(texts.ERROR_LOCATION_NOT_FOUND.format(params[1]))
     cursor.execute(queries.ADD_EVENT, [parcel_id[0], location_id[0], params[2]])
+    if output:
+        print(texts.EVENT_ADDED)
 
 
 def get_events_for_parcel(cursor, params: list, output: bool = True):
@@ -56,7 +63,9 @@ def get_events_for_parcel(cursor, params: list, output: bool = True):
     """
     cursor.execute(queries.GET_EVENTS_FOR_PARCEL, params)
     if output:
-        print(cursor.fetchall())
+        results = cursor.fetchall()
+        for res in results:
+            print(', '.join(res))
 
 
 def get_parcels_for_customer(cursor, params: list, output: bool = True):
@@ -65,7 +74,9 @@ def get_parcels_for_customer(cursor, params: list, output: bool = True):
     """
     cursor.execute(queries.GET_PARCELS_FOR_CUSTOMER, params)
     if output:
-        print(cursor.fetchall())
+        results = cursor.fetchall()
+        for res in results:
+            print('{}, {} tapahtumaa'.format(res[0], res[1]))
 
 
 def get_events_per_location_and_date(cursor, params: list, output: bool = True):
@@ -75,7 +86,8 @@ def get_events_per_location_and_date(cursor, params: list, output: bool = True):
     """
     cursor.execute(queries.GET_EVENTS_PER_DATE, params)
     if output:
-        print(cursor.fetchall())
+        result = cursor.fetchone()
+        print('Tapahtumien määrä: {}'.format(result[0]))
 
 
 def performance_test(cursor):
@@ -86,43 +98,45 @@ def performance_test(cursor):
     # step 1: add 1000 locations
     start = perf_counter()
     for x in range(1000):
-        add_location(cursor, ['LOC{}'.format(x+1)])
+        add_location(cursor, ['P{}'.format(x+1)])
     stop = perf_counter()
     print('Vaihe 1: {} s'.format(stop-start))
-    
+
     # step 2: add 1000 customers
     start = perf_counter()
     for x in range(1000):
-        add_customer(cursor, ['CUST{}'.format(x+1)])
+        add_customer(cursor, ['A{}'.format(x+1)])
     stop = perf_counter()
     print('Vaihe 2: {} s'.format(stop-start))
-    
+
     # step 3: add 1000 parcels
     start = perf_counter()
     for x in range(1000):
-        add_parcel_for_customer(cursor, ['ITEM{}'.format(x+1), 'CUST{}'.format(x+1)])
+        add_parcel_for_customer(cursor, ['ITEM{}'.format(x+1), 'A{}'.format(x+1)])
     stop = perf_counter()
     print('Vaihe 3: {} s'.format(stop-start))
 
     # step 4: add 1000000 events
     start = perf_counter()
     for x in range(1000000):
-        add_event(cursor, ['ITEM{}'.format((x % 1000)+1), 'LOC{}'.format((x % 1000)+1), 'foo'])
+        add_event(cursor, ['ITEM{}'.format((x % 1000)+1), 'P{}'.format((x % 1000)+1), 'foo'])
     stop = perf_counter()
     print('Vaihe 4: {} s'.format(stop-start))
     cursor.execute(queries.COMMIT)
 
     # step 5: do 1000 queries for a customer's parcels
-    # start = perf_counter()
-    # for x in range(1000):
-    #     get_parcels_for_customer(cursor, ['CUST{}'.format(x+1)], False)
-    # stop = perf_counter()
-    # print('Vaihe 5: {} s'.format(stop-start))
+    start = perf_counter()
+    for x in range(1000):
+        cursor.execute(queries.GET_PARCEL_COUNT_FOR_CUSTOMER, ['CUST{}'.format(x+1)])
+        cursor.fetchone()
+    stop = perf_counter()
+    print('Vaihe 5: {} s'.format(stop-start))
 
     # step 6: do 1000 queries for a parcel's events
     start = perf_counter()
     for x in range(1000):
-        get_events_for_parcel(cursor, ['ITEM1'.format(x+1)], False)
+        get_events_for_parcel(cursor, ['ITEM{}'.format(x+1)], False)
+        cursor.fetchall()
     stop = perf_counter()
     print('Vaihe 6: {} s'.format(stop-start))
 
