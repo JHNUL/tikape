@@ -98,28 +98,28 @@ def performance_test(cursor):
     # step 1: add 1000 locations
     start = perf_counter()
     for x in range(1000):
-        add_location(cursor, ['P{}'.format(x+1)])
+        add_location(cursor, ['P{}'.format(x+1)], False)
     stop = perf_counter()
     print('Vaihe 1: {} s'.format(stop-start))
 
     # step 2: add 1000 customers
     start = perf_counter()
     for x in range(1000):
-        add_customer(cursor, ['A{}'.format(x+1)])
+        add_customer(cursor, ['A{}'.format(x+1)], False)
     stop = perf_counter()
     print('Vaihe 2: {} s'.format(stop-start))
 
     # step 3: add 1000 parcels
     start = perf_counter()
     for x in range(1000):
-        add_parcel_for_customer(cursor, ['ITEM{}'.format(x+1), 'A{}'.format(x+1)])
+        add_parcel_for_customer(cursor, ['ITEM{}'.format(x+1), 'A{}'.format(x+1)], False)
     stop = perf_counter()
     print('Vaihe 3: {} s'.format(stop-start))
 
     # step 4: add 1000000 events
     start = perf_counter()
     for x in range(1000000):
-        add_event(cursor, ['ITEM{}'.format((x % 1000)+1), 'P{}'.format((x % 1000)+1), 'foo'])
+        add_event(cursor, ['ITEM{}'.format((x % 1000)+1), 'P{}'.format((x % 1000)+1), 'foo'], False)
     stop = perf_counter()
     print('Vaihe 4: {} s'.format(stop-start))
     cursor.execute(queries.COMMIT)
