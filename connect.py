@@ -7,7 +7,7 @@ import query_actions
 
 def connect_db() -> 'cursor':
     """Connect to db and return curson on success"""
-    db = connect("test.db", detect_types=PARSE_DECLTYPES)
+    db = connect("test.db")
     db.isolation_level = None
     return db.cursor()
 
@@ -21,7 +21,7 @@ def cast_input(input_str: str) -> int:
         return int(input_str)
 
 
-def main(c):
+def main(cursor):
     """Start loop where user can select actions"""
     print(texts.LIST_ACTIONS)
     while True:
@@ -29,22 +29,26 @@ def main(c):
         user_input = input()
         # exit loop with empty string
         if not user_input:
-            c.close()
+            cursor.close()
             break
         else:
             try:
                 action_num = cast_input(user_input)
-                query_actions.execute_action(action_num, c)
+                query_actions.execute_action(action_num, cursor)
             except (Exception) as warning:
-                print(warning)
-
+                if str.startswith(str(warning), "NOT NULL"):
+                    print(texts.ERROR_NOT_NULL)
+                elif str.startswith(str(warning), "UNIQUE"):
+                    print(texts.ERROR_NOT_UNIQUE)
+                else:
+                    print(warning)
 
 if __name__ == "__main__":
     try:
-        c = connect_db()
-        main(c)
+        cursor = connect_db()
+        main(cursor)
     except Exception as show_stopper:
-        print('Error: {}'.format(show_stopper))
+        print('Virhe: {}'.format(show_stopper))
     finally:
-        if (c):
-            c.close()
+        if (cursor):
+            cursor.close()

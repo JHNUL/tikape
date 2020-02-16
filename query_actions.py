@@ -16,6 +16,7 @@ def add_location(cursor, params: list, output: bool = True):
     if output:
         print(texts.LOCATION_ADDED)
 
+
 def add_customer(cursor, params: list, output: bool = True):
     """params
         - [0] customer name

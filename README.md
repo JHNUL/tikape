@@ -41,7 +41,7 @@ WHERE A.nimi = ?
 GROUP BY P.asiakas_id;
 ```
 
-Vaihe 6 käyttää allaolevaa kyselyä ja on diabolisen hidas. Parannusta indeksin kanssa tulee n. 20%, joskin luvuissa on vaihtelua ajojen välillä. Indeksit liittyvät paketin koodiin ja paketti_id sekä paikka_id kenttiin.
+Vaihe 6 käyttää allaolevaa kyselyä ja on diabolisen hidas. Parannusta indeksien kanssa tulee n. 20%, joskin luvuissa on vaihtelua ajojen välillä. Indeksit liittyvät paketin koodiin ja paketti_id sekä paikka_id kenttiin.
 
 ```sql
 SELECT T.ajankohta, L.nimi, T.kuvaus FROM Tapahtumat T

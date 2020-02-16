@@ -1,9 +1,4 @@
-INIT_DB =                   """ PRAGMA foreign_keys = OFF;
-                                DROP TABLE IF EXISTS Asiakkaat;
-                                DROP TABLE IF EXISTS Paikat;
-                                DROP TABLE IF EXISTS Paketit;
-                                DROP TABLE IF EXISTS Tapahtumat;
-                                PRAGMA foreign_keys = ON;
+INIT_DB =                   """ PRAGMA foreign_keys = ON;
                                 CREATE TABLE Asiakkaat (
                                   id INTEGER PRIMARY KEY,
                                   nimi TEXT NOT NULL UNIQUE
@@ -25,12 +20,7 @@ INIT_DB =                   """ PRAGMA foreign_keys = OFF;
                                 );
                                 """
 
-INIT_DB_WITH_INDICES =      """ PRAGMA foreign_keys = OFF;
-                                DROP TABLE IF EXISTS Asiakkaat;
-                                DROP TABLE IF EXISTS Paikat;
-                                DROP TABLE IF EXISTS Paketit;
-                                DROP TABLE IF EXISTS Tapahtumat;
-                                PRAGMA foreign_keys = ON;
+INIT_DB_WITH_INDICES =      """ PRAGMA foreign_keys = ON;
                                 CREATE TABLE Asiakkaat (
                                   id INTEGER PRIMARY KEY,
                                   nimi TEXT NOT NULL UNIQUE
